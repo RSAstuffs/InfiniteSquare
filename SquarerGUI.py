@@ -137,7 +137,7 @@ class FactorizationGUI:
                  style='Info.TLabel').pack(anchor='w')
         
         self.iterations_var = tk.StringVar(value="10")
-        iter_scale = tk.Scale(iter_frame, from_=1, to=100,
+        iter_scale = tk.Scale(iter_frame, from_=1, to=1000,
                              orient=tk.HORIZONTAL,
                              variable=self.iterations_var,
                              bg='#2d2d2d', fg='#ffffff',
