@@ -1043,7 +1043,7 @@ def factor_with_lattice_compression(N: int, lattice_size: int = None, zoom_itera
             else:
                 # For smaller zoom, calculate based on zoom factor
                 zoom_factor_approx = 10 ** min(final_zoom_exponent, 100)  # Cap at 10^100 for calculation
-                search_window_size = min(10000, sqrt_n // (zoom_factor_approx // 1000))
+                search_window_size = min(1000000, sqrt_n // (zoom_factor_approx // 1000))  # Increased to 1M max
         
         if search_window_size is not None:
             print(f"  Search window size: ±{search_window_size} (user-specified)")
@@ -1404,6 +1404,31 @@ def factor_with_lattice_compression(N: int, lattice_size: int = None, zoom_itera
                             unique_factors.append(pair)
                             seen.add(pair)
                             print(f"    ✓ FACTOR FOUND VIA RATIO RESONANCE (X/Y): {g}")
+
+        # SVP-Style Linear Combination Extraction (Alien method)
+        # Search small integer combinations of handoff_x and remainder using final_point weights
+        print(f"  [SVP-STYLE] Linear-combination search around singularity {final_point}")
+        v1 = handoff_x
+        v2 = remainder
+        w_x = final_point.x
+        w_z = final_point.z
+        for i in range(-200, 201):  # Larger range
+            for j in range(-200, 201):
+                candidate = abs((w_x + i) * v1 - (w_z + j) * v2)
+                if candidate <= 1 or candidate >= N or candidate in checked:
+                    continue
+                checked.add(candidate)
+                g = gcd(candidate, N)
+                if 1 < g < N:
+                    pair = tuple(sorted([g, N // g]))
+                    if pair not in seen:
+                        unique_factors.append(pair)
+                        seen.add(pair)
+                        print(f"    ✓ FACTOR FOUND VIA SVP BASIS: {g} (i={i}, j={j})")
+                        break  # Early exit if found
+            else:
+                continue
+            break
     else:
         # Fallback to original method if no handoff data
         print(f"  [FALLBACK] Using original sqrt-based search")
