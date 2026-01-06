@@ -816,17 +816,16 @@ def factor_with_lattice_compression(N: int, lattice_size: int = None, zoom_itera
     print("="*80)
     print()
     
-    zoom_iterations = 100  # Number of recursive refinements
+    # Use parameter if provided, otherwise default to 100
+    if zoom_iterations is None:
+        zoom_iterations = 100
+    
     micro_lattice_size = 100  # 100×100×100 micro-lattice
     zoom_factor_per_iteration = micro_lattice_size ** 3  # 10^6 per iteration
     
     current_lattice = lattice
     current_center = initial_singularity
-    zoom_history = [{'iteration': 0, 'point': initial_singularity, 'zoom_factor': 1}]
-    
-    # Use parameter if provided, otherwise default to 100
-    if zoom_iterations is None:
-        zoom_iterations = 100
+    zoom_history = [{'iteration': 0, 'point': initial_singularity, 'zoom_exponent': 0}]
     
     print(f"Performing {zoom_iterations} iterations of recursive refinement...")
     print(f"Each iteration: {micro_lattice_size}×{micro_lattice_size}×{micro_lattice_size} = {zoom_factor_per_iteration:,} zoom factor")
@@ -874,10 +873,13 @@ def factor_with_lattice_compression(N: int, lattice_size: int = None, zoom_itera
             print(f"  → Cumulative zoom: 10^{zoom_exponent} ({iteration} iterations)")
             print()
         
+        # Calculate zoom exponent for this iteration
+        zoom_exponent = iteration * 6  # 10^6 per iteration
+        
         zoom_history.append({
             'iteration': iteration,
             'point': current_center,
-            'zoom_factor': cumulative_zoom
+            'zoom_exponent': zoom_exponent
         })
     
     final_iterations = len(zoom_history) - 1
